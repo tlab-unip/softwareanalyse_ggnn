@@ -1,3 +1,7 @@
+testOutput/
+dependency-reduced-pom.xml
+.vscode/
+
 .gradle
 **/build/
 !src/**/build/

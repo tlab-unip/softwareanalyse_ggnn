@@ -11,7 +11,8 @@ import java.util.Set;
 /**
  * Visitor for inferring CHILD edges.
  */
-public class ChildVisitor implements AstVisitorWithDefaults<Void, Set<Pair<IdentityWrapper<AstNode>, IdentityWrapper<AstNode>>>> {
+public class ChildVisitor
+        implements AstVisitorWithDefaults<Void, Set<Pair<IdentityWrapper<AstNode>, IdentityWrapper<AstNode>>>> {
 
     private final IdentityHashMap<AstNode, IdentityWrapper<AstNode>> astNodeMap;
 
@@ -20,4 +21,14 @@ public class ChildVisitor implements AstVisitorWithDefaults<Void, Set<Pair<Ident
     }
 
     // TODO: Implement required visitors
+    @Override
+    public Void defaultAction(AstNode node, Set<Pair<IdentityWrapper<AstNode>, IdentityWrapper<AstNode>>> arg) {
+        astNodeMap.putIfAbsent(node, IdentityWrapper.of(node));
+        for (var child : node.children()) {
+            astNodeMap.putIfAbsent(child, IdentityWrapper.of(child));
+            arg.add(new Pair<>(astNodeMap.get(node), astNodeMap.get(child)));
+        }
+        visitChildren(node, arg);
+        return null;
+    }
 }

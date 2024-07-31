@@ -1,6 +1,7 @@
 package de.uni_passau.fim.se2.sa.ggnn.preprocessor.ggnn.visitors;
 
 import de.uni_passau.fim.se2.sa.ggnn.ast.model.AstNode;
+import de.uni_passau.fim.se2.sa.ggnn.ast.model.identifier.SimpleIdentifier;
 import de.uni_passau.fim.se2.sa.ggnn.ast.visitor.AstVisitorWithDefaults;
 import de.uni_passau.fim.se2.sa.ggnn.program_graphs.ddg.DataFlowFacts;
 import de.uni_passau.fim.se2.sa.ggnn.util.functional.IdentityWrapper;
@@ -24,4 +25,22 @@ public class LastReadVisitor implements
     }
 
     // TODO: Implement required visitors
+    @Override
+    public Set<Pair<IdentityWrapper<AstNode>, IdentityWrapper<AstNode>>> visit(SimpleIdentifier node,
+            Set<Pair<IdentityWrapper<AstNode>, IdentityWrapper<AstNode>>> arg) {
+        astNodeMap.putIfAbsent(node, IdentityWrapper.of(node));
+        var lastReads = dataFlowFacts.getUseUsePairs();
+        if (lastReads != null) {
+            for (var lastRead : lastReads) {
+                var source = lastRead.a().variable();
+                var target = lastRead.b().variable();
+                astNodeMap.putIfAbsent(source, IdentityWrapper.of(source));
+                astNodeMap.putIfAbsent(target, IdentityWrapper.of(target));
+                if (source.equals(node)) {
+                    arg.add(new Pair<>(astNodeMap.get(source), astNodeMap.get(target)));
+                }
+            }
+        }
+        return arg;
+    }
 }

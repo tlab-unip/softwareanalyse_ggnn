@@ -12,14 +12,19 @@ import de.uni_passau.fim.se2.sa.ggnn.util.functional.IdentityWrapper;
 
 import java.util.Set;
 
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+
 /**
  * Builder of the GGNN Graph.
  */
 public class GGNNGraphBuilder implements Builder<MethodDeclaration, GGNNGraph> {
 
     /**
-     * Builds the GGNN graph by first defining all GGNN-Edges using the {@link GGNNEdgesVisitor}.
-     * Given the GGNN-Edges the GGNN graph is built by adding all required nodes and linking them accordingly.
+     * Builds the GGNN graph by first defining all GGNN-Edges using the
+     * {@link GGNNEdgesVisitor}.
+     * Given the GGNN-Edges the GGNN graph is built by adding all required nodes and
+     * linking them accordingly.
      *
      * @param method based on which the GGNN will be built.
      * @return the GGNN graph.
@@ -27,8 +32,18 @@ public class GGNNGraphBuilder implements Builder<MethodDeclaration, GGNNGraph> {
     @Override
     public GGNNGraph build(final MethodDeclaration method) {
         // TODO Implement me
-        throw new UnsupportedOperationException("Implement me");
-
+        var visitor = new GGNNEdgesVisitor(method);
+        var edgeTypeSetMap = visitor.getEdges();
+        var graph = new DefaultDirectedGraph<IdentityWrapper<AstNode>, DefaultEdge>(DefaultEdge.class);
+        for (var edges : edgeTypeSetMap.values()) {
+            for (var edge : edges) {
+                graph.addVertex(edge.a());
+                graph.addVertex(edge.b());
+                graph.addEdge(edge.a(), edge.b());
+            }
+        }
+        var ggnnGraph = new GGNNGraph(method.name().name(), getLabelNodes(method), graph, edgeTypeSetMap);
+        return ggnnGraph;
     }
 
     private Set<IdentityWrapper<AstNode>> getLabelNodes(final MethodDeclaration method) {
